@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 
 import { createOrder } from '@/lib/orders/order-service';
-import { listOrders } from '@/lib/fake-db/store';
+import { listOrders } from '@/lib/orders/prisma-order-repository';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

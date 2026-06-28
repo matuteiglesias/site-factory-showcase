@@ -1,7 +1,7 @@
 import { createOrderInputSchema } from '@/contracts/order';
 import type { CreateOrderInput, Order } from '@/contracts/order';
 import { activeTemplates, getTemplateBySlug } from '@/content/templates';
-import { createOrderRecord } from '@/lib/fake-db/store';
+import { prismaOrderRepository } from '@/lib/orders/prisma-order-repository';
 
 export function getActiveTemplateOrThrow(templateSlug: string) {
   const template = getTemplateBySlug(templateSlug);
@@ -25,7 +25,7 @@ export async function createOrder(input: unknown): Promise<Order> {
   const createOrderInput: CreateOrderInput = createOrderInputSchema.parse(input);
   const template = getActiveTemplateOrThrow(createOrderInput.templateSlug);
 
-  return createOrderRecord({
+  return prismaOrderRepository.create({
     createOrderInput,
     amountARS: template.price.amountARS,
   });

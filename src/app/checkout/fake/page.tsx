@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import FakeCheckoutActions from '@/components/checkout/FakeCheckoutActions';
-import { getOrderByPublicId } from '@/lib/fake-db/store';
+import { getOrderByPublicId } from '@/lib/orders/prisma-order-repository';
 
 export const dynamic = 'force-dynamic';
 

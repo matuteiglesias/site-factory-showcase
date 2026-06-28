@@ -1,4 +1,4 @@
-import { getOrderByPublicId } from '@/lib/fake-db/store';
+import { getOrderByPublicId } from '@/lib/orders/prisma-order-repository';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
