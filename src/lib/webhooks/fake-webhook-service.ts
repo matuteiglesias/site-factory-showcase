@@ -3,11 +3,10 @@ import { z } from 'zod';
 import type { Order } from '@/contracts/order';
 import {
   createWebhookEventRecord,
-  getOrderByPublicId,
   markWebhookEventProcessed,
-  transitionOrderRecord,
   updateLatestPaymentAttemptStatus,
 } from '@/lib/fake-db/store';
+import { getOrderByPublicId, transitionOrderRecord } from '@/lib/orders/prisma-order-repository';
 import { isOrderBriefComplete } from '@/lib/orders/order-service';
 import { nextStatusAfterApprovedPayment } from '@/lib/orders/order-machine';
 

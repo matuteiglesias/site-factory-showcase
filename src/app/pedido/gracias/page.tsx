@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getOrderByPublicId } from '@/lib/fake-db/store';
+import { getOrderByPublicId } from '@/lib/orders/prisma-order-repository';
 
 export const dynamic = 'force-dynamic';
 

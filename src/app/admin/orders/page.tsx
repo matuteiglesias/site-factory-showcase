@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { listOrders } from '@/lib/fake-db/store';
+import { listOrders } from '@/lib/orders/prisma-order-repository';
 
 export const dynamic = 'force-dynamic';
 
