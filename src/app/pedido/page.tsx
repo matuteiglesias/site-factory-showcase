@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import OrderForm from '@/components/orders/OrderForm';
+import { getTemplateBySlug } from '@/content/templates';
 
 type Props = {
   searchParams: Promise<{
@@ -14,19 +15,34 @@ export const metadata = {
 };
 
 export default async function PedidoPage({ searchParams }: Props) {
-  const { template } = await searchParams;
+  const { template: templateSlug } = await searchParams;
+  const template = templateSlug ? getTemplateBySlug(templateSlug) : undefined;
 
   return (
-    <main style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px' }}>
-      <Link href="/templates">← Volver a templates</Link>
+    <main className="page-shell">
+      <Link className="button button--ghost" href="/templates">
+        ← Volver a templates
+      </Link>
 
-      <h1>Pedir sitio</h1>
-      <p>
-        Vertical slice falsa: este formulario crea una orden local y te manda a
-        un checkout fake.
-      </p>
+      <section className="hero" style={{ paddingBottom: 28 }}>
+        <p className="eyebrow">Brief inicial</p>
+        <h1 className="page-title">Pedir sitio</h1>
 
-      <OrderForm templateSlug={template} />
+        {template ? (
+          <p className="page-lede">
+            Template seleccionado: <strong>{template.title}</strong>. Este
+            formulario crea un pedido real en base de datos con estado{' '}
+            <strong>pending_payment</strong>.
+          </p>
+        ) : (
+          <p className="page-lede">
+            Elegí un template desde el catálogo o ingresá manualmente el slug.
+            Este milestone todavía no cobra online.
+          </p>
+        )}
+      </section>
+
+      <OrderForm templateSlug={templateSlug} />
     </main>
   );
 }

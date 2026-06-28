@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model OrderRecord {
+  id           String   @id
+  publicId     String   @unique
+  templateSlug String
+  customerJson String
+  briefJson    String
+  amountARS    Int
+  currency     String
+  status       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  paymentAttempts PaymentAttemptRecord[]
+  webhookEvents   WebhookEventRecord[]
+
+  @@index([status])
+  @@index([templateSlug])
+  @@index([createdAt])
+}
+
+model PaymentAttemptRecord {
+  id                   String   @id
+  orderId              String
+  orderPublicId         String
+  provider             String
+  providerPreferenceId String?
+  providerPaymentId    String?
+  providerStatus       String?
+  amountARS            Int
+  currency             String
+  rawResponseJson      String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  order OrderRecord @relation(fields: [orderPublicId], references: [publicId], onDelete: Cascade)
+
+  @@index([orderPublicId])
+  @@index([provider])
+  @@index([providerPaymentId])
+}
+
+model WebhookEventRecord {
+  id                String    @id
+  orderPublicId     String?
+  provider          String
+  providerEventId   String?
+  topic             String?
+  action            String?
+  dataId            String?
+  xRequestId        String?
+  xSignature        String?
+  rawBodyJson       String
+  processingStatus  String
+  processingError   String?
+  createdAt         DateTime  @default(now())
+  processedAt       DateTime?
+
+  order OrderRecord? @relation(fields: [orderPublicId], references: [publicId], onDelete: SetNull)
+
+  @@index([orderPublicId])
+  @@index([provider])
+  @@index([providerEventId])
+  @@index([processingStatus])
+}

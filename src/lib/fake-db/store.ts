@@ -1,104 +1,141 @@
 import 'server-only';
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import crypto from 'node:crypto';
 
-import type { CreateOrderInput, Order, OrderStatus } from '@/contracts/order';
+import type { CreateOrderInput, Order, OrderBrief, Customer, OrderStatus } from '@/contracts/order';
 import type { PaymentAttempt, ProviderPaymentStatus } from '@/contracts/payment';
 import type { WebhookEvent } from '@/contracts/webhook';
 import { assertCanTransitionOrder } from '@/lib/orders/order-machine';
-
-type FakeDb = {
-  orders: Order[];
-  paymentAttempts: PaymentAttempt[];
-  webhookEvents: WebhookEvent[];
-};
-
-const dbDir = path.join(process.cwd(), '.local', 'fake-db');
-const dbFile = path.join(dbDir, 'db.json');
-
-const emptyDb: FakeDb = {
-  orders: [],
-  paymentAttempts: [],
-  webhookEvents: [],
-};
-
-function nowIso() {
-  return new Date().toISOString();
-}
+import { prisma } from '@/lib/db/prisma';
 
 function id(prefix: string) {
   return `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`;
 }
 
-async function ensureDb(): Promise<void> {
-  await mkdir(dbDir, { recursive: true });
-
-  try {
-    await readFile(dbFile, 'utf8');
-  } catch {
-    await writeFile(dbFile, JSON.stringify(emptyDb, null, 2));
-  }
+function stringifyJson(value: unknown): string {
+  return JSON.stringify(value);
 }
 
-export async function readFakeDb(): Promise<FakeDb> {
-  await ensureDb();
-
-  const raw = await readFile(dbFile, 'utf8');
-
-  if (!raw.trim()) {
-    return emptyDb;
-  }
-
-  return JSON.parse(raw) as FakeDb;
+function parseJson<T>(value: string): T {
+  return JSON.parse(value) as T;
 }
 
-export async function writeFakeDb(db: FakeDb): Promise<void> {
-  await ensureDb();
-  await writeFile(dbFile, JSON.stringify(db, null, 2));
+function toIso(value: Date): string {
+  return value.toISOString();
+}
+
+type OrderRecord = Awaited<ReturnType<typeof prisma.orderRecord.findFirst>>;
+
+function mapOrder(record: NonNullable<OrderRecord>): Order {
+  return {
+    id: record.id,
+    publicId: record.publicId,
+    templateSlug: record.templateSlug,
+    customer: parseJson<Customer>(record.customerJson),
+    brief: parseJson<OrderBrief>(record.briefJson),
+    amountARS: record.amountARS,
+    currency: 'ARS',
+    status: record.status as OrderStatus,
+    createdAt: toIso(record.createdAt),
+    updatedAt: toIso(record.updatedAt),
+  };
+}
+
+type PaymentAttemptRecord = Awaited<
+  ReturnType<typeof prisma.paymentAttemptRecord.findFirst>
+>;
+
+function mapPaymentAttempt(
+  record: NonNullable<PaymentAttemptRecord>,
+): PaymentAttempt {
+  return {
+    id: record.id,
+    orderId: record.orderId,
+    orderPublicId: record.orderPublicId,
+    provider: 'mercadopago',
+    providerPreferenceId: record.providerPreferenceId ?? undefined,
+    providerPaymentId: record.providerPaymentId ?? undefined,
+    providerStatus: record.providerStatus
+      ? (record.providerStatus as ProviderPaymentStatus)
+      : undefined,
+    amountARS: record.amountARS,
+    currency: 'ARS',
+    rawResponse: record.rawResponseJson
+      ? parseJson<unknown>(record.rawResponseJson)
+      : undefined,
+    createdAt: toIso(record.createdAt),
+    updatedAt: toIso(record.updatedAt),
+  };
+}
+
+type WebhookEventRecord = Awaited<
+  ReturnType<typeof prisma.webhookEventRecord.findFirst>
+>;
+
+function mapWebhookEvent(record: NonNullable<WebhookEventRecord>): WebhookEvent {
+  return {
+    id: record.id,
+    provider: 'mercadopago',
+    providerEventId: record.providerEventId ?? undefined,
+    topic: record.topic ?? undefined,
+    action: record.action ?? undefined,
+    dataId: record.dataId ?? undefined,
+    xRequestId: record.xRequestId ?? undefined,
+    xSignature: record.xSignature ?? undefined,
+    rawBody: parseJson<unknown>(record.rawBodyJson),
+    processingStatus: record.processingStatus as WebhookEvent['processingStatus'],
+    processingError: record.processingError ?? undefined,
+    createdAt: toIso(record.createdAt),
+    processedAt: record.processedAt ? toIso(record.processedAt) : undefined,
+  };
 }
 
 export async function resetFakeDb(): Promise<void> {
-  await writeFakeDb(emptyDb);
+  await prisma.webhookEventRecord.deleteMany();
+  await prisma.paymentAttemptRecord.deleteMany();
+  await prisma.orderRecord.deleteMany();
 }
 
 export async function listOrders(): Promise<Order[]> {
-  const db = await readFakeDb();
-  return [...db.orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const records = await prisma.orderRecord.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return records.map(mapOrder);
 }
 
 export async function getOrderByPublicId(
   publicId: string,
 ): Promise<Order | undefined> {
-  const db = await readFakeDb();
-  return db.orders.find((order) => order.publicId === publicId);
+  const record = await prisma.orderRecord.findUnique({
+    where: {
+      publicId,
+    },
+  });
+
+  return record ? mapOrder(record) : undefined;
 }
 
 export async function createOrderRecord(input: {
   createOrderInput: CreateOrderInput;
   amountARS: number;
 }): Promise<Order> {
-  const db = await readFakeDb();
-  const timestamp = nowIso();
+  const record = await prisma.orderRecord.create({
+    data: {
+      id: id('order'),
+      publicId: id('ord'),
+      templateSlug: input.createOrderInput.templateSlug,
+      customerJson: stringifyJson(input.createOrderInput.customer),
+      briefJson: stringifyJson(input.createOrderInput.brief),
+      amountARS: input.amountARS,
+      currency: 'ARS',
+      status: 'pending_payment',
+    },
+  });
 
-  const order: Order = {
-    id: id('order'),
-    publicId: id('ord'),
-    templateSlug: input.createOrderInput.templateSlug,
-    customer: input.createOrderInput.customer,
-    brief: input.createOrderInput.brief,
-    amountARS: input.amountARS,
-    currency: 'ARS',
-    status: 'pending_payment',
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  };
-
-  db.orders.push(order);
-  await writeFakeDb(db);
-
-  return order;
+  return mapOrder(record);
 }
 
 export async function transitionOrderRecord(input: {
@@ -106,20 +143,24 @@ export async function transitionOrderRecord(input: {
   to: OrderStatus;
   reason: string;
 }): Promise<Order> {
-  const db = await readFakeDb();
-  const order = db.orders.find((candidate) => candidate.publicId === input.publicId);
+  const current = await getOrderByPublicId(input.publicId);
 
-  if (!order) {
+  if (!current) {
     throw new Error(`Order not found: ${input.publicId}`);
   }
 
-  assertCanTransitionOrder(order.status, input.to);
+  assertCanTransitionOrder(current.status, input.to);
 
-  order.status = input.to;
-  order.updatedAt = nowIso();
+  const record = await prisma.orderRecord.update({
+    where: {
+      publicId: input.publicId,
+    },
+    data: {
+      status: input.to,
+    },
+  });
 
-  await writeFakeDb(db);
-  return order;
+  return mapOrder(record);
 }
 
 export async function createPaymentAttemptRecord(input: {
@@ -127,39 +168,39 @@ export async function createPaymentAttemptRecord(input: {
   providerPreferenceId: string;
   checkoutUrl: string;
 }): Promise<PaymentAttempt> {
-  const db = await readFakeDb();
-  const timestamp = nowIso();
-
-  const attempt: PaymentAttempt = {
-    id: id('payatt'),
-    orderId: input.order.id,
-    orderPublicId: input.order.publicId,
-    provider: 'mercadopago',
-    providerPreferenceId: input.providerPreferenceId,
-    providerStatus: 'pending',
-    amountARS: input.order.amountARS,
-    currency: 'ARS',
-    rawResponse: {
-      fake: true,
-      checkoutUrl: input.checkoutUrl,
+  const record = await prisma.paymentAttemptRecord.create({
+    data: {
+      id: id('payatt'),
+      orderId: input.order.id,
+      orderPublicId: input.order.publicId,
+      provider: 'mercadopago',
+      providerPreferenceId: input.providerPreferenceId,
+      providerStatus: 'pending',
+      amountARS: input.order.amountARS,
+      currency: 'ARS',
+      rawResponseJson: stringifyJson({
+        fake: true,
+        checkoutUrl: input.checkoutUrl,
+      }),
     },
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  };
+  });
 
-  db.paymentAttempts.push(attempt);
-  await writeFakeDb(db);
-
-  return attempt;
+  return mapPaymentAttempt(record);
 }
 
 export async function listPaymentAttemptsByOrderPublicId(
   orderPublicId: string,
 ): Promise<PaymentAttempt[]> {
-  const db = await readFakeDb();
-  return db.paymentAttempts.filter(
-    (attempt) => attempt.orderPublicId === orderPublicId,
-  );
+  const records = await prisma.paymentAttemptRecord.findMany({
+    where: {
+      orderPublicId,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  return records.map(mapPaymentAttempt);
 }
 
 export async function updateLatestPaymentAttemptStatus(input: {
@@ -167,24 +208,30 @@ export async function updateLatestPaymentAttemptStatus(input: {
   providerStatus: ProviderPaymentStatus;
   providerPaymentId?: string;
 }): Promise<PaymentAttempt | undefined> {
-  const db = await readFakeDb();
-
-  const attempts = db.paymentAttempts.filter(
-    (attempt) => attempt.orderPublicId === input.orderPublicId,
-  );
-
-  const latest = attempts.at(-1);
+  const latest = await prisma.paymentAttemptRecord.findFirst({
+    where: {
+      orderPublicId: input.orderPublicId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
 
   if (!latest) {
     return undefined;
   }
 
-  latest.providerStatus = input.providerStatus;
-  latest.providerPaymentId = input.providerPaymentId ?? latest.providerPaymentId;
-  latest.updatedAt = nowIso();
+  const record = await prisma.paymentAttemptRecord.update({
+    where: {
+      id: latest.id,
+    },
+    data: {
+      providerStatus: input.providerStatus,
+      providerPaymentId: input.providerPaymentId ?? latest.providerPaymentId,
+    },
+  });
 
-  await writeFakeDb(db);
-  return latest;
+  return mapPaymentAttempt(record);
 }
 
 export async function createWebhookEventRecord(input: {
@@ -198,28 +245,32 @@ export async function createWebhookEventRecord(input: {
   processingStatus?: WebhookEvent['processingStatus'];
   processingError?: string;
 }): Promise<WebhookEvent> {
-  const db = await readFakeDb();
-  const timestamp = nowIso();
+  const order = input.dataId
+    ? await prisma.orderRecord.findUnique({
+        where: {
+          publicId: input.dataId,
+        },
+      })
+    : null;
 
-  const event: WebhookEvent = {
-    id: id('wh'),
-    provider: 'mercadopago',
-    providerEventId: input.providerEventId,
-    topic: input.topic,
-    action: input.action,
-    dataId: input.dataId,
-    xRequestId: input.xRequestId,
-    xSignature: input.xSignature,
-    rawBody: input.rawBody,
-    processingStatus: input.processingStatus ?? 'received',
-    processingError: input.processingError,
-    createdAt: timestamp,
-  };
+  const record = await prisma.webhookEventRecord.create({
+    data: {
+      id: id('wh'),
+      orderPublicId: order?.publicId,
+      provider: 'mercadopago',
+      providerEventId: input.providerEventId,
+      topic: input.topic,
+      action: input.action,
+      dataId: input.dataId,
+      xRequestId: input.xRequestId,
+      xSignature: input.xSignature,
+      rawBodyJson: stringifyJson(input.rawBody),
+      processingStatus: input.processingStatus ?? 'received',
+      processingError: input.processingError,
+    },
+  });
 
-  db.webhookEvents.push(event);
-  await writeFakeDb(db);
-
-  return event;
+  return mapWebhookEvent(record);
 }
 
 export async function markWebhookEventProcessed(input: {
@@ -227,42 +278,48 @@ export async function markWebhookEventProcessed(input: {
   processingStatus: WebhookEvent['processingStatus'];
   processingError?: string;
 }): Promise<WebhookEvent | undefined> {
-  const db = await readFakeDb();
+  const existing = await prisma.webhookEventRecord.findUnique({
+    where: {
+      id: input.webhookEventId,
+    },
+  });
 
-  const event = db.webhookEvents.find(
-    (candidate) => candidate.id === input.webhookEventId,
-  );
-
-  if (!event) {
+  if (!existing) {
     return undefined;
   }
 
-  event.processingStatus = input.processingStatus;
-  event.processingError = input.processingError;
-  event.processedAt = nowIso();
+  const record = await prisma.webhookEventRecord.update({
+    where: {
+      id: input.webhookEventId,
+    },
+    data: {
+      processingStatus: input.processingStatus,
+      processingError: input.processingError,
+      processedAt: new Date(),
+    },
+  });
 
-  await writeFakeDb(db);
-  return event;
+  return mapWebhookEvent(record);
 }
 
 export async function listWebhookEventsByOrderPublicId(
   orderPublicId: string,
 ): Promise<WebhookEvent[]> {
-  const db = await readFakeDb();
-
-  return db.webhookEvents.filter((event) => {
-    if (event.dataId === orderPublicId) {
-      return true;
-    }
-
-    if (
-      typeof event.rawBody === 'object' &&
-      event.rawBody !== null &&
-      'orderPublicId' in event.rawBody
-    ) {
-      return event.rawBody.orderPublicId === orderPublicId;
-    }
-
-    return false;
+  const records = await prisma.webhookEventRecord.findMany({
+    where: {
+      OR: [
+        {
+          orderPublicId,
+        },
+        {
+          dataId: orderPublicId,
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
   });
+
+  return records.map(mapWebhookEvent);
 }

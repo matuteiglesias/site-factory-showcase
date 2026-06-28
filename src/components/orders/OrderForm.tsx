@@ -20,10 +20,8 @@ export default function OrderForm({ templateSlug }: Props) {
 
     const formData = new FormData(event.currentTarget);
 
-    const selectedTemplate = String(formData.get('templateSlug') ?? '');
-
     const orderPayload = {
-      templateSlug: selectedTemplate,
+      templateSlug: String(formData.get('templateSlug') ?? ''),
       customer: {
         name: String(formData.get('name') ?? ''),
         email: String(formData.get('email') ?? ''),
@@ -53,23 +51,7 @@ export default function OrderForm({ templateSlug }: Props) {
         throw new Error(orderJson.message ?? 'No se pudo crear el pedido');
       }
 
-      const checkoutRes = await fetch('/api/checkout/fake', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          orderPublicId: orderJson.order.publicId,
-        }),
-      });
-
-      const checkoutJson = await checkoutRes.json();
-
-      if (!checkoutRes.ok) {
-        throw new Error(
-          checkoutJson.message ?? 'No se pudo crear el checkout fake',
-        );
-      }
-
-      window.location.href = checkoutJson.checkout.checkoutUrl;
+      window.location.href = `/pedido/gracias?order=${orderJson.order.publicId}`;
     } catch (error) {
       setState({
         status: 'error',
@@ -79,101 +61,82 @@ export default function OrderForm({ templateSlug }: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ display: 'grid', gap: 16 }}>
-      <label>
-        Template slug
+    <form className="form-card form-grid" onSubmit={onSubmit}>
+      <label className="field">
+        Template elegido
         <input
           name="templateSlug"
           defaultValue={templateSlug ?? ''}
           required
-          style={{ display: 'block', width: '100%', padding: 8 }}
+          readOnly={Boolean(templateSlug)}
         />
       </label>
 
-      <label>
+      <label className="field">
         Nombre
-        <input
-          name="name"
-          defaultValue="Cliente Demo"
-          required
-          style={{ display: 'block', width: '100%', padding: 8 }}
-        />
+        <input name="name" required />
       </label>
 
-      <label>
+      <label className="field">
         Email
-        <input
-          name="email"
-          type="email"
-          defaultValue="cliente.demo@example.com"
-          required
-          style={{ display: 'block', width: '100%', padding: 8 }}
-        />
+        <input name="email" type="email" required />
       </label>
 
-      <label>
+      <label className="field">
         WhatsApp
-        <input
-          name="whatsapp"
-          defaultValue="+54 9 11 5555 5555"
-          style={{ display: 'block', width: '100%', padding: 8 }}
-        />
+        <input name="whatsapp" placeholder="+54 9 ..." />
       </label>
 
-      <label>
-        Nombre del negocio/profesional
-        <input
-          name="businessName"
-          defaultValue="Demo Profesional"
-          style={{ display: 'block', width: '100%', padding: 8 }}
-        />
+      <label className="field">
+        Nombre del negocio o profesional
+        <input name="businessName" required />
       </label>
 
-      <label>
+      <label className="field">
         Rubro
         <input
           name="industry"
-          defaultValue="Servicios profesionales"
-          style={{ display: 'block', width: '100%', padding: 8 }}
+          required
+          placeholder="Psicología, educación, consultoría, pyme local..."
         />
       </label>
 
-      <label>
+      <label className="field">
         Objetivo del sitio
         <textarea
           name="goal"
-          defaultValue="Quiero validar el flujo falso completo del sistema: pedido, checkout fake, webhook fake y consola interna."
           required
           rows={5}
-          style={{ display: 'block', width: '100%', padding: 8 }}
+          placeholder="Qué necesitás conseguir: consultas, agenda, presentación profesional, cursos, ventas, etc."
         />
       </label>
 
-      <label>
-        <input name="hasLogo" type="checkbox" defaultChecked /> Tiene logo
+      <label className="checkbox-row">
+        <input name="hasLogo" type="checkbox" />
+        Ya tengo logo
       </label>
 
-      <label>
-        <input name="hasCopy" type="checkbox" defaultChecked /> Tiene textos
+      <label className="checkbox-row">
+        <input name="hasCopy" type="checkbox" />
+        Ya tengo textos preparados
       </label>
 
-      <label>
-        <input name="hasDomain" type="checkbox" /> Tiene dominio
+      <label className="checkbox-row">
+        <input name="hasDomain" type="checkbox" />
+        Ya tengo dominio
       </label>
 
-      <label>
-        Notas
+      <label className="field">
+        Notas adicionales
         <textarea
           name="notes"
           rows={4}
-          style={{ display: 'block', width: '100%', padding: 8 }}
+          placeholder="Links, referencias, urgencia, restricciones o comentarios."
         />
       </label>
 
-      <button disabled={state.status === 'submitting'} type="submit">
-        {state.status === 'submitting'
-          ? 'Creando pedido...'
-          : 'Crear pedido y pasar a checkout fake'}
+      <button className="button button--primary" disabled={state.status === 'submitting'} type="submit">
+        {state.status === 'submitting' ? 'Guardando pedido...' : 'Enviar pedido'}
       </button>
 
       {state.status === 'error' ? (

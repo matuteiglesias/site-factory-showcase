@@ -12,9 +12,15 @@
     "test:watch": "vitest",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "smoke": "node scripts/smoke-local.mjs",
-    "smoke:m1": "node scripts/smoke-m1.mjs"
+    "smoke:m1": "node scripts/smoke-m1.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "smoke:m2": "node scripts/smoke-m2.mjs",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -27,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "prisma": "^6.19.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.9"
