@@ -10,13 +10,15 @@ export default function HomePage() {
       <h1>Catálogo y sistema de pedidos para sitios profesionales</h1>
 
       <p style={{ fontSize: 18, lineHeight: 1.6 }}>
-        Milestone 0: contratos, catálogo inicial, rutas mínimas y checks de
-        integración. La app todavía no cobra ni crea pedidos reales.
+        Milestone 1: vertical slice falsa integrada. La app permite elegir un
+        template, crear un pedido, pasar por checkout fake, procesar webhook fake
+        y ver el pedido en ops.
       </p>
 
       <div style={{ display: 'flex', gap: 16, marginTop: 32 }}>
         <Link href="/templates">Ver templates</Link>
         <Link href="/pedido">Ir a pedido</Link>
+        <Link href="/admin/orders">Ops</Link>
       </div>
 
       <section style={{ marginTop: 48 }}>

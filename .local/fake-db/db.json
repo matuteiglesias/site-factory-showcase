@@ -1,0 +1,64 @@
+{
+  "orders": [
+    {
+      "id": "order_bc525075d82b4f2d",
+      "publicId": "ord_4b1b94d804c140e1",
+      "templateSlug": "psicologo-calido-agenda",
+      "customer": {
+        "name": "Smoke Test Client",
+        "email": "smoke-1782680433484@example.com",
+        "whatsapp": "+54 9 11 5555 5555"
+      },
+      "brief": {
+        "businessName": "Smoke Test Studio",
+        "industry": "Servicios profesionales",
+        "goal": "Validate fake vertical slice from order creation to fake webhook reconciliation.",
+        "hasLogo": true,
+        "hasCopy": true,
+        "hasDomain": false,
+        "notes": "Created by smoke-m1."
+      },
+      "amountARS": 180000,
+      "currency": "ARS",
+      "status": "ready_for_production",
+      "createdAt": "2026-06-28T21:00:37.105Z",
+      "updatedAt": "2026-06-28T21:00:38.186Z"
+    }
+  ],
+  "paymentAttempts": [
+    {
+      "id": "payatt_2d74fb38d4d24f8b",
+      "orderId": "order_bc525075d82b4f2d",
+      "orderPublicId": "ord_4b1b94d804c140e1",
+      "provider": "mercadopago",
+      "providerPreferenceId": "fake_pref_c558a1a600574275",
+      "providerStatus": "approved",
+      "amountARS": 180000,
+      "currency": "ARS",
+      "rawResponse": {
+        "fake": true,
+        "checkoutUrl": "http://localhost:3000/checkout/fake?order=ord_4b1b94d804c140e1&pref=fake_pref_c558a1a600574275"
+      },
+      "createdAt": "2026-06-28T21:00:37.706Z",
+      "updatedAt": "2026-06-28T21:00:38.176Z",
+      "providerPaymentId": "fake_pay_ord_4b1b94d804c140e1"
+    }
+  ],
+  "webhookEvents": [
+    {
+      "id": "wh_d98b3df28a694ce2",
+      "provider": "mercadopago",
+      "providerEventId": "fake_event_ord_4b1b94d804c140e1_approved",
+      "topic": "payment",
+      "action": "payment.approved",
+      "dataId": "ord_4b1b94d804c140e1",
+      "rawBody": {
+        "orderPublicId": "ord_4b1b94d804c140e1",
+        "providerStatus": "approved"
+      },
+      "processingStatus": "processed",
+      "createdAt": "2026-06-28T21:00:38.165Z",
+      "processedAt": "2026-06-28T21:00:38.194Z"
+    }
+  ]
+}
