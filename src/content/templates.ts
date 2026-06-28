@@ -12,7 +12,7 @@ const rawTemplates = [
     format: 'landing',
     stack: ['nextjs', 'tailwind', 'static_export'],
     tags: ['psicologia', 'salud', 'agenda', 'landing', 'servicios-profesionales'],
-    screenshot: '/templates/psicologo-clinico-agenda.svg',
+    screenshot: '/templates/psicologo-clinico-agenda.png',
     demoUrl: 'https://maydana-psicologo.vercel.app/',
     price: {
       amountARS: 180000,
@@ -54,7 +54,7 @@ const rawTemplates = [
     format: 'institutional',
     stack: ['nextjs', 'tailwind', 'static_export'],
     tags: ['educacion', 'cursos', 'talleres', 'consultoria', 'institucional'],
-    screenshot: '/templates/formacion-cursos-consultas.svg',
+    screenshot: '/templates/formacion-cursos-consultas.png',
     demoUrl: 'https://grafoescrito.vercel.app/',
     price: {
       amountARS: 240000,

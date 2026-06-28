@@ -11,6 +11,10 @@ type SubmitState =
   | { status: 'submitting' }
   | { status: 'error'; message: string };
 
+function fieldClass() {
+  return 'w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-black';
+}
+
 export default function OrderForm({ templateSlug }: Props) {
   const [state, setState] = useState<SubmitState>({ status: 'idle' });
 
@@ -61,10 +65,14 @@ export default function OrderForm({ templateSlug }: Props) {
   }
 
   return (
-    <form className="form-card form-grid" onSubmit={onSubmit}>
-      <label className="field">
+    <form
+      className="grid max-w-3xl gap-5 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+      onSubmit={onSubmit}
+    >
+      <label className="grid gap-2 text-sm font-medium">
         Template elegido
         <input
+          className={fieldClass()}
           name="templateSlug"
           defaultValue={templateSlug ?? ''}
           required
@@ -72,38 +80,44 @@ export default function OrderForm({ templateSlug }: Props) {
         />
       </label>
 
-      <label className="field">
-        Nombre
-        <input name="name" required />
-      </label>
+      <div className="grid gap-5 md:grid-cols-2">
+        <label className="grid gap-2 text-sm font-medium">
+          Nombre
+          <input className={fieldClass()} name="name" required />
+        </label>
 
-      <label className="field">
-        Email
-        <input name="email" type="email" required />
-      </label>
+        <label className="grid gap-2 text-sm font-medium">
+          Email
+          <input className={fieldClass()} name="email" type="email" required />
+        </label>
+      </div>
 
-      <label className="field">
-        WhatsApp
-        <input name="whatsapp" placeholder="+54 9 ..." />
-      </label>
+      <div className="grid gap-5 md:grid-cols-2">
+        <label className="grid gap-2 text-sm font-medium">
+          WhatsApp
+          <input className={fieldClass()} name="whatsapp" placeholder="+54 9 ..." />
+        </label>
 
-      <label className="field">
+        <label className="grid gap-2 text-sm font-medium">
+          Rubro
+          <input
+            className={fieldClass()}
+            name="industry"
+            required
+            placeholder="Psicología, educación, consultoría..."
+          />
+        </label>
+      </div>
+
+      <label className="grid gap-2 text-sm font-medium">
         Nombre del negocio o profesional
-        <input name="businessName" required />
+        <input className={fieldClass()} name="businessName" required />
       </label>
 
-      <label className="field">
-        Rubro
-        <input
-          name="industry"
-          required
-          placeholder="Psicología, educación, consultoría, pyme local..."
-        />
-      </label>
-
-      <label className="field">
+      <label className="grid gap-2 text-sm font-medium">
         Objetivo del sitio
         <textarea
+          className={fieldClass()}
           name="goal"
           required
           rows={5}
@@ -111,36 +125,43 @@ export default function OrderForm({ templateSlug }: Props) {
         />
       </label>
 
-      <label className="checkbox-row">
-        <input name="hasLogo" type="checkbox" />
-        Ya tengo logo
-      </label>
+      <div className="grid gap-3 text-sm text-neutral-600 md:grid-cols-3">
+        <label className="flex items-center gap-2">
+          <input name="hasLogo" type="checkbox" />
+          Ya tengo logo
+        </label>
 
-      <label className="checkbox-row">
-        <input name="hasCopy" type="checkbox" />
-        Ya tengo textos preparados
-      </label>
+        <label className="flex items-center gap-2">
+          <input name="hasCopy" type="checkbox" />
+          Ya tengo textos
+        </label>
 
-      <label className="checkbox-row">
-        <input name="hasDomain" type="checkbox" />
-        Ya tengo dominio
-      </label>
+        <label className="flex items-center gap-2">
+          <input name="hasDomain" type="checkbox" />
+          Ya tengo dominio
+        </label>
+      </div>
 
-      <label className="field">
+      <label className="grid gap-2 text-sm font-medium">
         Notas adicionales
         <textarea
+          className={fieldClass()}
           name="notes"
           rows={4}
           placeholder="Links, referencias, urgencia, restricciones o comentarios."
         />
       </label>
 
-      <button className="button button--primary" disabled={state.status === 'submitting'} type="submit">
+      <button
+        className="w-fit rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-60"
+        disabled={state.status === 'submitting'}
+        type="submit"
+      >
         {state.status === 'submitting' ? 'Guardando pedido...' : 'Enviar pedido'}
       </button>
 
       {state.status === 'error' ? (
-        <p style={{ color: 'crimson' }}>{state.message}</p>
+        <p className="text-sm text-red-600">{state.message}</p>
       ) : null}
     </form>
   );

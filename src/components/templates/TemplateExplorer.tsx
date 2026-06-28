@@ -29,9 +29,7 @@ function templateMatchesFilter(template: Template, filter: string) {
 }
 
 function templateMatchesSearch(template: Template, query: string) {
-  if (!query.trim()) {
-    return true;
-  }
+  if (!query.trim()) return true;
 
   const q = query.toLowerCase();
 
@@ -48,11 +46,7 @@ function templateMatchesSearch(template: Template, query: string) {
     .includes(q);
 }
 
-export default function TemplateExplorer({
-  templates,
-}: {
-  templates: Template[];
-}) {
+export default function TemplateExplorer({ templates }: { templates: Template[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -68,11 +62,8 @@ export default function TemplateExplorer({
   function setQuery(value: string) {
     const next = new URLSearchParams(searchParams.toString());
 
-    if (value) {
-      next.set('q', value);
-    } else {
-      next.delete('q');
-    }
+    if (value) next.set('q', value);
+    else next.delete('q');
 
     replaceParams(next);
   }
@@ -108,33 +99,41 @@ export default function TemplateExplorer({
 
   return (
     <>
-      <div className="catalog-toolbar">
+      <div className="mb-8">
         <input
-          className="search-input"
+          className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm outline-none shadow-sm focus:border-black"
           placeholder="Buscar por rubro, objetivo o tipo de sitio..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
 
-      <div className="catalog-layout">
-        <aside className="filters-panel">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <h2>Filtros</h2>
+      <div className="grid gap-8 md:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="h-fit rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm md:sticky md:top-24">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold">Filtros</h2>
             {selectedFilters.length > 0 || query ? (
-              <button className="button" type="button" onClick={clearAll}>
+              <button
+                className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:border-black"
+                type="button"
+                onClick={clearAll}
+              >
                 Limpiar
               </button>
             ) : null}
           </div>
 
-          <div className="filter-list">
+          <div className="grid gap-2">
             {filters.map((filter) => {
               const active = selectedFilters.includes(filter.id);
 
               return (
                 <button
-                  className={`filter-button ${active ? 'is-active' : ''}`}
+                  className={
+                    active
+                      ? 'flex h-9 items-center justify-between rounded-lg bg-black px-3 text-sm text-white'
+                      : 'flex h-9 items-center justify-between rounded-lg bg-neutral-100 px-3 text-sm text-neutral-600 hover:bg-neutral-200'
+                  }
                   key={filter.id}
                   type="button"
                   onClick={() => toggleFilter(filter.id)}
@@ -148,13 +147,13 @@ export default function TemplateExplorer({
         </aside>
 
         <section>
-          <div className="results-meta">
+          <div className="mb-4 text-sm text-neutral-500">
             {filteredTemplates.length} template
             {filteredTemplates.length === 1 ? '' : 's'} encontrado
             {filteredTemplates.length === 1 ? '' : 's'}
           </div>
 
-          <div className="template-grid">
+          <div className="grid gap-6 md:grid-cols-2">
             {filteredTemplates.map((template) => (
               <TemplateCard key={template.slug} template={template} />
             ))}

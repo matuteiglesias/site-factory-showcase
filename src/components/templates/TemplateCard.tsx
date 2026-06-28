@@ -25,55 +25,72 @@ const formatLabels: Record<string, string> = {
 
 export default function TemplateCard({ template }: { template: Template }) {
   return (
-    <article className="template-card">
-      <Link
-        className="template-card__media"
-        href={`/templates/${template.slug}`}
-        aria-label={`Ver ${template.title}`}
-      >
+    <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl">
+      <Link href={`/templates/${template.slug}`} className="block border-b border-neutral-200 bg-neutral-100">
         <Image
           src={template.screenshot}
           alt={`Preview de ${template.title}`}
           width={1200}
           height={720}
+          className="h-auto w-full"
           priority={template.featured}
         />
       </Link>
 
-      <div className="template-card__body">
-        <div className="template-card__meta">
-          <span className="badge">{formatLabels[template.format] ?? template.format}</span>
+      <div className="p-5">
+        <div className="mb-3 flex flex-wrap gap-2">
+          <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-widest text-neutral-500">
+            {formatLabels[template.format] ?? template.format}
+          </span>
           {template.audience.slice(0, 2).map((audience) => (
-            <span className="badge" key={audience}>
+            <span
+              key={audience}
+              className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
+            >
               {audienceLabels[audience] ?? audience}
             </span>
           ))}
         </div>
 
-        <h2>{template.title}</h2>
-        <p>{template.shortDescription}</p>
+        <h2 className="text-lg font-semibold tracking-tight">{template.title}</h2>
+        <p className="mt-2 text-sm leading-6 text-neutral-600">
+          {template.shortDescription}
+        </p>
 
-        <div className="template-card__facts">
-          <div className="fact">
-            <span>Desde</span>
-            <strong>ARS {ars.format(template.price.amountARS)}</strong>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+            <span className="block text-xs text-neutral-500">Desde</span>
+            <strong className="mt-1 block text-sm">
+              ARS {ars.format(template.price.amountARS)}
+            </strong>
           </div>
-          <div className="fact">
-            <span>Entrega</span>
-            <strong>
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+            <span className="block text-xs text-neutral-500">Entrega</span>
+            <strong className="mt-1 block text-sm">
               {template.deliveryDays.min}–{template.deliveryDays.max} días
             </strong>
           </div>
         </div>
 
-        <div className="template-card__actions">
-          <Link className="button" href={`/templates/${template.slug}`}>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link
+            href={`/templates/${template.slug}`}
+            className="rounded-full border border-neutral-300 bg-white px-3 py-2 text-sm font-medium hover:border-black"
+          >
             Ver ficha
           </Link>
-          <a className="button button--ghost" href={template.demoUrl} target="_blank" rel="noreferrer">
+          <a
+            href={template.demoUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full border border-neutral-300 bg-white px-3 py-2 text-sm font-medium hover:border-black"
+          >
             Demo
           </a>
-          <Link className="button button--primary" href={`/pedido?template=${template.slug}`}>
+          <Link
+            href={`/pedido?template=${template.slug}`}
+            className="rounded-full bg-black px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+          >
             Pedir
           </Link>
         </div>
