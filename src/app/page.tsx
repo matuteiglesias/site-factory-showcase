@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import PublicFaq from '@/components/public/PublicFaq';
+
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-20">
@@ -38,7 +40,7 @@ export default function HomePage() {
         <div className="mb-6">
           <h2 className="text-2xl font-semibold tracking-tight">Cómo funciona</h2>
           <p className="mt-2 text-neutral-600">
-            El sistema separa venta, pedido, pago y producción.
+            El sistema separa catálogo, brief, revisión comercial y producción para que sepas qué esperar antes de avanzar.
           </p>
         </div>
 
@@ -46,7 +48,8 @@ export default function HomePage() {
           {[
             ['1 · Catálogo', 'Elegí un punto de partida', 'El cliente navega templates reales por rubro, formato y objetivo.'],
             ['2 · Brief', 'Pedido estructurado', 'El formulario captura inputs mínimos antes de iniciar producción.'],
-            ['3 · Operación', 'Estado auditable', 'Cada pedido entra con estado, monto server-side y seguimiento interno.'],
+            ['3 · Revisión', 'Alcance antes de cobrar', 'Revisamos tu brief, confirmamos materiales y coordinamos el pago antes de iniciar producción.'],
+            ['4 · Producción', 'Entrega con materiales completos', 'El plazo empieza cuando textos, imágenes, contactos y confirmación comercial están cerrados.'],
           ].map(([eyebrow, title, body]) => (
             <article
               key={title}
@@ -61,6 +64,21 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <section className="mt-20 grid gap-5 rounded-3xl border border-neutral-200 bg-black p-6 text-white md:grid-cols-3 md:p-8">
+        {[
+          ['Incluido', 'Adaptación del template, secciones acordadas, contenido final y contactos listos para publicar.'],
+          ['No incluido', 'Rediseño ilimitado, producción completa de marca o cambios de alcance sin revisión previa.'],
+          ['Pago', 'Se coordina después de revisar el brief; enviar el pedido no genera un cobro automático.'],
+        ].map(([title, body]) => (
+          <article key={title}>
+            <h2 className="text-lg font-semibold">{title}</h2>
+            <p className="mt-2 leading-7 text-neutral-300">{body}</p>
+          </article>
+        ))}
+      </section>
+
+      <PublicFaq />
     </main>
   );
 }

@@ -1,7 +1,10 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
 import type { Template } from '@/contracts/template';
+import { trackAnalyticsEvent } from '@/lib/analytics/events';
 
 const ars = new Intl.NumberFormat('es-AR');
 
@@ -21,6 +24,12 @@ const formatLabels: Record<string, string> = {
   institutional: 'Institucional',
   docs: 'Docs',
   portfolio: 'Portfolio',
+};
+
+const complexityLabels: Record<Template['complexity'], string> = {
+  simple: 'Simple',
+  standard: 'Estándar',
+  advanced: 'Avanzado',
 };
 
 export default function TemplateCard({ template }: { template: Template }) {
@@ -57,7 +66,14 @@ export default function TemplateCard({ template }: { template: Template }) {
           {template.shortDescription}
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+          <span className="block text-xs text-neutral-500">Objetivo principal</span>
+          <strong className="mt-1 block text-sm leading-5">
+            {template.primaryGoal}
+          </strong>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
             <span className="block text-xs text-neutral-500">Desde</span>
             <strong className="mt-1 block text-sm">
@@ -72,6 +88,14 @@ export default function TemplateCard({ template }: { template: Template }) {
           </div>
         </div>
 
+        <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
+          <span className="block text-xs text-neutral-500">Ideal para</span>
+          <p className="mt-1 text-sm leading-5 text-neutral-700">{template.bestFor}</p>
+          <span className="mt-3 inline-flex rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] font-semibold uppercase tracking-widest text-neutral-500">
+            Complejidad {complexityLabels[template.complexity]}
+          </span>
+        </div>
+
         <div className="mt-5 flex flex-wrap gap-2">
           <Link
             href={`/templates/${template.slug}`}
@@ -84,6 +108,12 @@ export default function TemplateCard({ template }: { template: Template }) {
             target="_blank"
             rel="noreferrer"
             className="rounded-full border border-neutral-300 bg-white px-3 py-2 text-sm font-medium hover:border-black"
+            onClick={() =>
+              trackAnalyticsEvent({
+                name: 'template_demo_clicked',
+                payload: { templateSlug: template.slug, source: 'card' },
+              })
+            }
           >
             Demo
           </a>

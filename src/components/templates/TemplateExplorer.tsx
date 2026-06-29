@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import type { Template } from '@/contracts/template';
+import { trackAnalyticsEvent } from '@/lib/analytics/events';
 import TemplateCard from './TemplateCard';
 
 const filters = [
@@ -40,6 +41,11 @@ function templateMatchesSearch(template: Template, query: string) {
     template.format,
     template.audience.join(' '),
     template.tags.join(' '),
+    template.bestFor,
+    template.primaryGoal,
+    template.complexity,
+    template.recommendedFor.join(' '),
+    template.notIdealFor.join(' '),
   ]
     .join(' ')
     .toLowerCase()
@@ -54,6 +60,13 @@ export default function TemplateExplorer({ templates }: { templates: Template[] 
   const query = searchParams.get('q') ?? '';
   const selectedFilters = searchParams.getAll('filter');
 
+  useEffect(() => {
+    trackAnalyticsEvent({
+      name: 'template_list_viewed',
+      payload: { templateCount: templates.length },
+    });
+  }, [templates.length]);
+
   function replaceParams(next: URLSearchParams) {
     const qs = next.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -64,6 +77,11 @@ export default function TemplateExplorer({ templates }: { templates: Template[] 
 
     if (value) next.set('q', value);
     else next.delete('q');
+
+    trackAnalyticsEvent({
+      name: 'template_filter_used',
+      payload: { filterType: 'search', hasQuery: Boolean(value) },
+    });
 
     replaceParams(next);
   }
@@ -79,6 +97,12 @@ export default function TemplateExplorer({ templates }: { templates: Template[] 
       : [...current, filter];
 
     updated.forEach((item) => next.append('filter', item));
+
+    trackAnalyticsEvent({
+      name: 'template_filter_used',
+      payload: { filterType: 'facet', filter, active: !current.includes(filter) },
+    });
+
     replaceParams(next);
   }
 

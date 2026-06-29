@@ -45,6 +45,12 @@ export const templateSchema = z.object({
   stack: z.array(z.enum(templateStackItems)).min(1),
   tags: z.array(z.string().min(2)).default([]),
 
+  bestFor: z.string().min(3).max(180),
+  primaryGoal: z.string().min(3).max(160),
+  complexity: z.enum(['simple', 'standard', 'advanced']),
+  recommendedFor: z.array(z.string().min(3)).min(1),
+  notIdealFor: z.array(z.string().min(3)).min(1),
+
   screenshot: z.string().min(1),
   demoUrl: z.string().url(),
 

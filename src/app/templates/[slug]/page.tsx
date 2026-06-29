@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import TrackOnView from '@/components/analytics/TrackOnView';
+import TrackedExternalLink from '@/components/analytics/TrackedExternalLink';
 import { activeTemplates, getTemplateBySlug } from '@/content/templates';
 
 type Props = {
@@ -11,6 +13,12 @@ type Props = {
 };
 
 const ars = new Intl.NumberFormat('es-AR');
+
+const complexityLabels = {
+  simple: 'Simple',
+  standard: 'Estándar',
+  advanced: 'Avanzado',
+} as const;
 
 export function generateStaticParams() {
   return activeTemplates.map((template) => ({
@@ -42,6 +50,10 @@ export default async function TemplateDetailPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
+      <TrackOnView
+        name="template_detail_viewed"
+        payload={{ templateSlug: template.slug }}
+      />
       <Link
         href="/templates"
         className="inline-flex rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium hover:border-black"
@@ -73,6 +85,59 @@ export default async function TemplateDetailPage({ params }: Props) {
               priority
             />
           </div>
+
+          <section className="mt-12 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <div className="grid gap-5 md:grid-cols-3">
+              <div>
+                <span className="text-sm text-neutral-500">Mejor para</span>
+                <p className="mt-2 font-medium leading-7 text-neutral-800">
+                  {template.bestFor}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm text-neutral-500">Objetivo principal</span>
+                <p className="mt-2 font-medium leading-7 text-neutral-800">
+                  {template.primaryGoal}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm text-neutral-500">Complejidad</span>
+                <p className="mt-2 font-medium leading-7 text-neutral-800">
+                  {complexityLabels[template.complexity]}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-12 grid gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-green-200 bg-green-50 p-6">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Recomendado para
+              </h2>
+              <ul className="mt-5 grid gap-3">
+                {template.recommendedFor.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-6 text-green-950">
+                    <span className="font-semibold text-green-700">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                No es ideal para
+              </h2>
+              <ul className="mt-5 grid gap-3">
+                {template.notIdealFor.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-6 text-amber-950">
+                    <span className="font-semibold text-amber-700">!</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
 
           <section className="mt-12">
             <div className="mb-5">
@@ -146,10 +211,20 @@ export default async function TemplateDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <p className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
-            El plazo corre desde que el brief y los materiales mínimos están
-            completos.
-          </p>
+          <div className="mt-4 grid gap-3">
+            <p className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
+              El plazo corre desde que el brief y los materiales mínimos están
+              completos.
+            </p>
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+              Enviar el pedido no cobra automáticamente: primero revisamos alcance,
+              materiales y confirmación comercial.
+            </p>
+            <p className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
+              El template acelera la producción, pero no equivale a diseño
+              personalizado ilimitado.
+            </p>
+          </div>
 
           <div className="mt-5 grid gap-3">
             <Link
@@ -159,14 +234,16 @@ export default async function TemplateDetailPage({ params }: Props) {
               Pedir este template
             </Link>
 
-            <a
+            <TrackedExternalLink
               className="inline-flex justify-center rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium hover:border-black"
               href={template.demoUrl}
               target="_blank"
               rel="noreferrer"
+              eventName="template_demo_clicked"
+              eventPayload={{ templateSlug: template.slug, source: 'detail' }}
             >
               Ver demo real
-            </a>
+            </TrackedExternalLink>
           </div>
 
           <div className="mt-6">
