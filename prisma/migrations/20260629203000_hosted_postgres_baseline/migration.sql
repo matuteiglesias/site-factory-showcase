@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "OrderRecord" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
     "templateSlug" TEXT NOT NULL,
     "customerJson" TEXT NOT NULL,
@@ -8,13 +8,14 @@ CREATE TABLE "OrderRecord" (
     "amountARS" INTEGER NOT NULL,
     "currency" TEXT NOT NULL,
     "status" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "OrderRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "PaymentAttemptRecord" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "orderPublicId" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
@@ -24,14 +25,14 @@ CREATE TABLE "PaymentAttemptRecord" (
     "amountARS" INTEGER NOT NULL,
     "currency" TEXT NOT NULL,
     "rawResponseJson" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "PaymentAttemptRecord_orderPublicId_fkey" FOREIGN KEY ("orderPublicId") REFERENCES "OrderRecord" ("publicId") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "PaymentAttemptRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WebhookEventRecord" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "orderPublicId" TEXT,
     "provider" TEXT NOT NULL,
     "providerEventId" TEXT,
@@ -43,9 +44,9 @@ CREATE TABLE "WebhookEventRecord" (
     "rawBodyJson" TEXT NOT NULL,
     "processingStatus" TEXT NOT NULL,
     "processingError" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "processedAt" DATETIME,
-    CONSTRAINT "WebhookEventRecord_orderPublicId_fkey" FOREIGN KEY ("orderPublicId") REFERENCES "OrderRecord" ("publicId") ON DELETE SET NULL ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "processedAt" TIMESTAMP(3),
+    CONSTRAINT "WebhookEventRecord_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -80,3 +81,9 @@ CREATE INDEX "WebhookEventRecord_providerEventId_idx" ON "WebhookEventRecord"("p
 
 -- CreateIndex
 CREATE INDEX "WebhookEventRecord_processingStatus_idx" ON "WebhookEventRecord"("processingStatus");
+
+-- AddForeignKey
+ALTER TABLE "PaymentAttemptRecord" ADD CONSTRAINT "PaymentAttemptRecord_orderPublicId_fkey" FOREIGN KEY ("orderPublicId") REFERENCES "OrderRecord"("publicId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WebhookEventRecord" ADD CONSTRAINT "WebhookEventRecord_orderPublicId_fkey" FOREIGN KEY ("orderPublicId") REFERENCES "OrderRecord"("publicId") ON DELETE SET NULL ON UPDATE CASCADE;
