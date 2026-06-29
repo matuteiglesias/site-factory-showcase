@@ -10,14 +10,17 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "check": "npm run verify:no-local-db && npm run typecheck && npm run lint && npm run test && npm run build",
     "smoke": "node scripts/smoke-local.mjs",
     "smoke:m1": "node scripts/smoke-m1.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "smoke:m2": "node scripts/smoke-m2.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "smoke:deploy": "node scripts/smoke-deployed.mjs",
+    "verify:no-local-db": "node scripts/verify-no-local-db-tracked.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

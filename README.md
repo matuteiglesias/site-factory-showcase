@@ -31,6 +31,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This app is deployment-ready only with a hosted Postgres-compatible database. The selected path is Neon Postgres. See `docs/DEPLOYMENT.md` for the required environment contract, migration commands, deploy checklist, smoke behavior, and admin protection notes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+At minimum, set `NEXT_PUBLIC_BASE_URL`, `DATABASE_URL`, `ADMIN_USER`, `ADMIN_PASSWORD`, and `NEXT_PUBLIC_SHOW_OPS_LINK` before exercising order routes in a deployed environment. Local development also requires a disposable Postgres database; use a Neon development branch or the local container instructions in `docs/DEPLOYMENT.md`.

@@ -7,7 +7,7 @@
 - Real catalog with two live demo-based templates
 - Template detail pages
 - Pedido form
-- Prisma + SQLite order persistence
+- Prisma + Postgres-compatible order persistence
 - Orders start as `pending_payment`
 - Admin orders list/detail
 - Fake checkout and fake webhook flow from Milestone 1
@@ -32,8 +32,7 @@
 
 ## Not production-ready yet
 
-- SQLite is local-only and not appropriate for deployed production.
-- No hosted database is configured.
+- Hosted Postgres credentials must be configured per deploy environment.
 - Mercado Pago real checkout is not integrated.
 - Mercado Pago webhook signature validation is not integrated.
 - No real payment reconciliation exists.
@@ -44,13 +43,6 @@
 
 ## Recommended next bottleneck
 
-Before Mercado Pago: move order persistence to a hosted Postgres-compatible database.
-
-Good next options:
-
-- Supabase Postgres
-- Neon
-- Prisma Postgres
-- Vercel Postgres-compatible setup
+Before Mercado Pago: provision Neon Postgres in the deploy environment and verify migrations plus smoke scripts against the deployed URL.
 
 Only after hosted DB is stable should Mercado Pago real checkout/webhooks be connected.

@@ -18,9 +18,9 @@ Goal: deployed app can persist real orders.
 
 Tasks:
 
-- Pick hosted DB provider
-- Update `DATABASE_URL`
-- Run Prisma migration
+- Provision Neon Postgres
+- Set `DATABASE_URL` to the Neon pooled connection string
+- Run Prisma deploy migration
 - Verify order creation in deployed preview
 - Verify admin order detail reads deployed DB
 - Document migration commands
