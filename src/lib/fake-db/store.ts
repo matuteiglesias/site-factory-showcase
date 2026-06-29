@@ -167,6 +167,7 @@ export async function createPaymentAttemptRecord(input: {
   order: Order;
   providerPreferenceId: string;
   checkoutUrl: string;
+  rawResponse?: unknown;
 }): Promise<PaymentAttempt> {
   const record = await prisma.paymentAttemptRecord.create({
     data: {
@@ -178,10 +179,12 @@ export async function createPaymentAttemptRecord(input: {
       providerStatus: 'pending',
       amountARS: input.order.amountARS,
       currency: 'ARS',
-      rawResponseJson: stringifyJson({
-        fake: true,
-        checkoutUrl: input.checkoutUrl,
-      }),
+      rawResponseJson: stringifyJson(
+        input.rawResponse ?? {
+          fake: true,
+          checkoutUrl: input.checkoutUrl,
+        },
+      ),
     },
   });
 

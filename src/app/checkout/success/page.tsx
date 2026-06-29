@@ -1,27 +1,34 @@
 import Link from 'next/link';
 
+import { CheckoutResultStatus } from '@/components/checkout/CheckoutResultStatus';
+import {
+  getCheckoutResultOrderStatus,
+  type CheckoutResultSearchParams,
+} from '@/lib/payments/checkout-result';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 type Props = {
-  searchParams: Promise<{
-    order?: string;
-  }>;
+  searchParams: Promise<CheckoutResultSearchParams>;
 };
 
 export default async function CheckoutSuccessPage({ searchParams }: Props) {
-  const { order } = await searchParams;
+  const result = await getCheckoutResultOrderStatus(await searchParams);
 
   return (
     <main style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px' }}>
-      <h1>Pago fake aprobado</h1>
+      <h1>Pago recibido por Mercado Pago</h1>
       <p>
-        Esta página no marca pagos como aprobados. El cambio de estado ya debió
-        ocurrir vía webhook fake.
+        Esta página es informativa: no marca el pedido como pagado ni usa los
+        parámetros de la URL como comprobante de pago.
+      </p>
+      <p>
+        La confirmación real ocurre únicamente cuando el webhook de Mercado Pago
+        es validado y reconciliado contra el pago aprobado.
       </p>
 
-      {order ? (
-        <p>
-          <Link href={`/admin/orders/${order}`}>Ver pedido en ops</Link>
-        </p>
-      ) : null}
+      <CheckoutResultStatus {...result} />
 
       <p>
         <Link href="/admin/orders">Ver todos los pedidos</Link>

@@ -14,6 +14,7 @@ export type CreatePaymentAttemptInput = {
   order: Order;
   providerPreferenceId: string;
   checkoutUrl: string;
+  rawResponse?: unknown;
 };
 
 export type UpdateLatestPaymentAttemptStatusInput = {
