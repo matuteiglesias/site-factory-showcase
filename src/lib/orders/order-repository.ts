@@ -11,8 +11,13 @@ export type TransitionOrderInput = {
   reason: string;
 };
 
+export type ListOrdersFilters = {
+  status?: OrderStatus;
+  templateSlug?: string;
+};
+
 export interface OrderRepository {
-  list(): Promise<Order[]>;
+  list(filters?: ListOrdersFilters): Promise<Order[]>;
   findByPublicId(publicId: string): Promise<Order | undefined>;
   create(input: CreateOrderRecordInput): Promise<Order>;
   transition(input: TransitionOrderInput): Promise<Order>;
