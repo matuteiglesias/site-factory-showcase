@@ -49,7 +49,7 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 const { createOrder } = await import('@/lib/orders/order-service');
-const { transitionOrderRecord } = await import(
+const { listOrders, transitionOrderRecord } = await import(
   '@/lib/orders/prisma-order-repository'
 );
 
@@ -146,6 +146,25 @@ describe('repository-backed order invariants', () => {
       }),
     );
     expect(order.status).toBe('pending_payment');
+  });
+
+  it('passes admin list filters to the repository query', async () => {
+    orderRecord.findMany.mockResolvedValueOnce([]);
+
+    await listOrders({
+      status: 'pending_payment',
+      templateSlug: activeTemplate.slug,
+    });
+
+    expect(orderRecord.findMany).toHaveBeenCalledWith({
+      where: {
+        status: 'pending_payment',
+        templateSlug: activeTemplate.slug,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   });
 
   it('rejects invalid state transitions before updating the record', async () => {

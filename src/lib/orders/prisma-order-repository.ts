@@ -7,9 +7,12 @@ import { prisma } from '@/lib/db/prisma';
 import { assertCanTransitionOrder } from '@/lib/orders/order-machine';
 import type {
   CreateOrderRecordInput,
+  ListOrdersFilters,
   OrderRepository,
   TransitionOrderInput,
 } from '@/lib/orders/order-repository';
+
+export type { ListOrdersFilters } from '@/lib/orders/order-repository';
 
 function id(prefix: string) {
   return `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`;
@@ -44,8 +47,14 @@ function mapOrder(record: NonNullable<OrderRecord>): Order {
   };
 }
 
-export async function listOrders(): Promise<Order[]> {
+export async function listOrders(
+  filters: ListOrdersFilters = {},
+): Promise<Order[]> {
   const records = await prisma.orderRecord.findMany({
+    where: {
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.templateSlug ? { templateSlug: filters.templateSlug } : {}),
+    },
     orderBy: {
       createdAt: 'desc',
     },
