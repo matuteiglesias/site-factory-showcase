@@ -1,0 +1,41 @@
+# This file declares the repository boundary and its place in the GitHub estate.
+schema_version: 1
+id: web.site-factory.showcase
+repository:
+  id: repo.site-factory-showcase
+  github: matuteiglesias/site-factory-showcase
+domain: web
+system: web.site-factory
+role: catalog-and-order-showcase
+lifecycle: active
+authority:
+  status: proposed
+  owns:
+  - site catalog, brief intake, commercial review, production workflow, and showcase deployment
+  does_not_own:
+  - real payment processing
+  - client-specific content authority
+  - template source identity
+interfaces:
+  consumes:
+  - template:web.professional-site@1
+  produces:
+  - application:web.site-factory-showcase@1
+  - artifact:web.site-order@1
+upstream:
+- repo.web-professional-template
+downstream: []
+canonical_commands:
+- npm run dev
+- npm run build
+generated_paths:
+- .next/
+verification:
+  status: metadata-only
+  last_verified: '2026-08-04'
+  command: null
+  unknowns:
+  - database migration and smoke-test commands require local confirmation
+maintenance:
+  cadence: quarterly
+  next_review: '2026-11-01'
