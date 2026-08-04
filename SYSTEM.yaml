@@ -26,16 +26,20 @@ upstream:
 - repo.web-professional-template
 downstream: []
 canonical_commands:
-- npm run dev
-- npm run build
+- make check
+- make test
+- make smoke
+- make run
+- make build
 generated_paths:
 - .next/
 verification:
-  status: metadata-only
+  status: partial
   last_verified: '2026-08-04'
-  command: null
+  command: make check
   unknowns:
-  - database migration and smoke-test commands require local confirmation
+  - Make targets and native npm commands require execution from a local checkout with dependencies installed
+  - database migration and deployed smoke commands remain explicit operator tasks
 maintenance:
   cadence: quarterly
   next_review: '2026-11-01'
